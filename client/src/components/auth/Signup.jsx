@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { Button } from "../ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { toast } from "sonner";
+import { RadioGroupItem } from "@radix-ui/react-radio-group";
+import { setLoading } from "../../../redux/authSlice";
+import { Loader2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 
 const Signup = () => {
   const [input, setInput] = useState({
@@ -19,7 +23,11 @@ const Signup = () => {
     file: "",
   });
 
+  const { loading } = useSelector((store) => store.auth);
+
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   const changeEventHadler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -31,30 +39,52 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (
+      !input.fullName ||
+      !input.email ||
+      !input.phoneNumber ||
+      !input.password ||
+      !input.role
+    ) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    // Create FormData
     const formData = new FormData();
     formData.append("fullName", input.fullName);
     formData.append("email", input.email);
     formData.append("phoneNumber", input.phoneNumber);
     formData.append("password", input.password);
     formData.append("role", input.role);
-    if (input.file) {
+
+    // Add file if provided
+    if (input.file && input.file instanceof File) {
       formData.append("file", input.file);
     }
-    // console.log(input);
+
     try {
+      dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
       });
+
       if (res.data.success) {
         navigate("/login");
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
+      console.error(error);
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong!";
+      toast.error(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -118,7 +148,7 @@ const Signup = () => {
           </div>
           <div className="mt-5">
             <RadioGroup
-              defaultValue="option-one"
+              // defaultValue="option-one"
               className="flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">
@@ -138,8 +168,8 @@ const Signup = () => {
                 <Input
                   type="radio"
                   name="role"
-                  value="recruiter"
-                  checked={input.role === "recruiter"}
+                  value="recuriter"
+                  checked={input.role === "recuriter"}
                   onChange={changeEventHadler}
                   className="cursor-pointer"
                 />
@@ -148,9 +178,16 @@ const Signup = () => {
             </RadioGroup>
           </div>
           <div className="mt-6">
-            <Button type="submit" className="bg-purple-600 w-full">
-              Sign Up
-            </Button>
+            {loading ? (
+              <Button className="w-full">
+                {" "}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+              </Button>
+            ) : (
+              <Button type="submit" className="bg-purple-600 w-full">
+                Login
+              </Button>
+            )}
           </div>
           <div className="mt-3">
             <span>

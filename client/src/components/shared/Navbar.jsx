@@ -10,11 +10,12 @@ import { User2 } from "lucide-react";
 import { LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   let [user, setUser] = useState(false);
   return (
-    <div className="bg-slate-200">
+    <div className="bg-slate-200 ">
       <div className="flex items-center justify-between py-4 px-10">
         <div>
           <h1 className=" text-4xl font-bold">
@@ -23,16 +24,28 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-12">
           <ul className="flex font-medium gap-5">
-            <li>Home</li>
-            <li>Jobs</li>
-            <li>Browse</li>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/jobs">Jobs</Link>
+            </li>
+            <li>
+              <Link to="/browse">Browse</Link>
+            </li>
           </ul>
           {!user ? (
             <div className="flex items-center gap-2">
-              <Button variant="outline">login</Button>
-              <Button className="bg-purple-600 hover:bg-purple-800">
-                signup
-              </Button>
+              <Link to="/login">
+                {" "}
+                <Button variant="outline">login</Button>{" "}
+              </Link>
+              <Link to="/signup">
+                {" "}
+                <Button className="bg-purple-600 hover:bg-purple-800">
+                  signup
+                </Button>{" "}
+              </Link>
             </div>
           ) : (
             <Popover>

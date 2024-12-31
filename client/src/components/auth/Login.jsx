@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { Button } from "../ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { USER_API_END_POINT } from "../../../utils/constant";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../../redux/authSlice";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -16,7 +19,9 @@ const Login = () => {
     role: "",
   });
 
-  const navigate = useNavigate;
+  const { loading } = useSelector((store) => store.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const changeEventHadler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -25,21 +30,31 @@ const Login = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    // console.log(input);
+    if (!input.email || !input.password || !input.role) {
+      toast.error("All fields are required");
+      return;
+    }
+
     try {
+      dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
         headers: {
           "Content-Type": "application/json",
         },
         withCredentials: true,
       });
+
       if (res.data.success) {
         navigate("/");
         toast.success(res.data.message);
       }
-    } catch (err) {
-      console.log(err);
-      toast.err(err.response.data.message);
+    } catch (error) {
+      console.error(error);
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong!";
+      toast.error(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -77,7 +92,7 @@ const Login = () => {
 
           <div className="mt-5">
             <RadioGroup
-              defaultValue="option-one"
+              // defaultValue="option-one"
               className="flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">
@@ -97,8 +112,8 @@ const Login = () => {
                 <Input
                   type="radio"
                   name="role"
-                  value="recruiter"
-                  checked={input.role === "student"}
+                  value="recuriter"
+                  checked={input.role === "recuriter"}
                   onChange={changeEventHadler}
                   className="cursor-pointer"
                 />
@@ -107,9 +122,16 @@ const Login = () => {
             </RadioGroup>
           </div>
           <div className="mt-6">
-            <Button type="submit" className="bg-purple-600 w-full">
-              Login
-            </Button>
+            {loading ? (
+              <Button className="w-full">
+                {" "}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+              </Button>
+            ) : (
+              <Button type="submit" className="bg-purple-600 w-full">
+                Login
+              </Button>
+            )}
           </div>
           <div className="mt-3">
             <span>

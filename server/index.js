@@ -12,19 +12,19 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4500;
 
+const corsOption = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOption));
+
 // middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 connectDB();
-
-const corsOption = {
-  origin: "http//localhost:5173",
-  Credentials: true,
-};
-
-app.use(cors(corsOption));
 
 app.get("/home", (req, res) => {
   return res.status(200).json({
